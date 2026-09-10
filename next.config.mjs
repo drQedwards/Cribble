@@ -41,13 +41,25 @@ const nextConfig = {
     // server does not cross Next's memory threshold and restart mid-navigation.
     webpackMemoryOptimizations: true,
   },
-  // The Billboard product renamed to Sponsorship: old emails, bookmarks
-  // and vacant-rail deep links (?slot= rides along automatically) keep
-  // landing. API routes under /api/billboard/* are unaffected.
+  // The sponsorship product (Billboard, later Sponsorship) was retired;
+  // old emails and bookmarks land on the home / admin home instead of a 404.
   async redirects() {
     return [
-      { source: '/billboard', destination: '/sponsorship', permanent: true },
-      { source: '/admin/billboard', destination: '/admin/sponsorship', permanent: true },
+      { source: '/billboard', destination: '/', permanent: false },
+      { source: '/sponsorship', destination: '/', permanent: false },
+      { source: '/admin/billboard', destination: '/admin', permanent: false },
+      { source: '/admin/sponsorship', destination: '/admin', permanent: false },
+    ]
+  },
+  // Crawlers (X especially) often refuse image URLs with no extension.
+  // File-convention OG routes live at /…/opengraph-image; these aliases
+  // keep the generated card and give the URL a .png suffix.
+  async rewrites() {
+    return [
+      { source: '/opengraph-image.png', destination: '/opengraph-image' },
+      { source: '/status/opengraph-image.png', destination: '/status/opengraph-image' },
+      { source: '/join/:code/opengraph-image.png', destination: '/join/:code/opengraph-image' },
+      { source: '/u/:username/opengraph-image.png', destination: '/u/:username/opengraph-image' },
     ]
   },
   eslint: {

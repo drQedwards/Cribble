@@ -41,6 +41,13 @@ export function isAllowedDuringLock(pathname: string, hasSession = false): boole
   // /api/device/ rule below).
   if (pathname === '/status') return true
   if (pathname === '/api/status') return true
+  // Generated unfurl cards (file-convention opengraph-image routes) for
+  // the public pages above. They carry no extension, so STATIC_ASSET_RE
+  // does not catch them, and a locked rewrite hands crawlers the
+  // /maintenance HTML as the image — every pasted link loses its card.
+  // Exact matches: /u/** and /join/** cards ride their page rules.
+  if (pathname === '/opengraph-image' || pathname === '/opengraph-image.png') return true
+  if (pathname === '/status/opengraph-image' || pathname === '/status/opengraph-image.png') return true
   // Leaderboard visitor ticker (first-party pulse + heartbeat). Exact
   // match so nothing else under /api/analytics… rides along.
   if (pathname === '/api/analytics/visitors') return true
@@ -52,8 +59,8 @@ export function isAllowedDuringLock(pathname: string, hasSession = false): boole
   if (!pathname.startsWith('/api/') && STATIC_ASSET_RE.test(pathname)) return true
   if (pathname === '/dashboard' || pathname.startsWith('/dashboard/')) return true
   // Settings hub and bag are signed-in only while locked (same
-  // session-presence gate as /shop). Billboard APIs stay open below —
-  // the ticker/rails mount on allowlisted shell pages.
+  // session-presence gate as /shop). The billboard train API stays open
+  // below — the ticker mounts on allowlisted shell pages.
   if (pathname === '/settings' || pathname.startsWith('/settings/')) return hasSession
   if (pathname === '/bag' || pathname.startsWith('/bag/')) return hasSession
   if (pathname === '/admin' || pathname.startsWith('/admin/')) return true
@@ -61,8 +68,10 @@ export function isAllowedDuringLock(pathname: string, hasSession = false): boole
   if (pathname === '/leaderboard' || pathname.startsWith('/leaderboard/')) return true
   // Public pilot profiles (+ the /profile redirect into your own).
   if (pathname === '/profile' || pathname.startsWith('/u/')) return true
-  // Live placements for the ticker + rails (pages above are session-gated).
-  if (pathname.startsWith('/api/billboard')) return true
+  // The ticker's item train (announcements + hype). Exact match: the
+  // paid sponsorship routes that used to live under /api/billboard/* are
+  // gone, so nothing else under that prefix rides along.
+  if (pathname === '/api/billboard') return true
   if (/^\/api\/waitlist\/?$/.test(pathname)) return true
   if (pathname.startsWith('/api/auth/')) return true
   // Season calendar backs the dashboard rail + leaderboard countdown, and
@@ -109,10 +118,6 @@ export function isAllowedDuringLock(pathname: string, hasSession = false): boole
   // The Cribble Team pitch page is shared with companies while the beta
   // is locked — its checkout/API lanes are already open above.
   if (pathname === '/teams') return true
-  // The sponsorship buyer page is the same kind of shareable pitch
-  // (/billboard was the old path; keep this public so cribble.dev/sponsorship
-  // does not rewrite to /maintenance for signed-out buyers).
-  if (pathname === '/sponsorship' || pathname.startsWith('/sponsorship/')) return true
   // The team console is Polar's checkout success URL
   // (/team?checkout=success&checkout_id=...) — a mid-lock Team purchase
   // must land on the live page so the entitlement sync runs, and the

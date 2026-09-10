@@ -27,6 +27,7 @@ const FALLBACK_SOURCES = [
   { host: 'githubstatus.com', url: 'https://www.githubstatus.com' },
   { host: 'status.openai.com', url: 'https://status.openai.com' },
   { host: 'status.claude.com', url: 'https://status.claude.com' },
+  { host: 'google.com/appsstatus', url: 'https://www.google.com/appsstatus/dashboard/' },
   { host: 'status.cursor.com', url: 'https://status.cursor.com' },
   { host: 'status.x.ai', url: 'https://status.x.ai' }
 ]

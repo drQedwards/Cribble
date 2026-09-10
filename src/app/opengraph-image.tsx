@@ -10,7 +10,7 @@ import { getLandingLive } from '@/lib/landingLive'
 // telemetry pinned to the edges like an instrument plate.
 //
 // This file-convention image cascades to every route without a closer
-// one (/, /leaderboard, /teams, /sponsorship, /status); /join/[code]
+// one (/, /leaderboard, /teams, /status); /join/[code]
 // and /u/[username] keep their own crafted cards.
 //
 // Satori quirks documented on the join card apply here too: every div
@@ -24,7 +24,7 @@ export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
 // Landing accent — the chartreuse the click-through reveals (.lx-hero
-// re-pin in globals.css), NOT the app-wide ref-lime the join card uses.
+// re-pin in globals.css), NOT the gate-pass lime (#FCFF00) the join card uses.
 // Spent exactly three times: the underline, the final period, the
 // horizon line. The city lights below the limb read as part of the
 // horizon element, and everything else stays ink/chalk/mute.

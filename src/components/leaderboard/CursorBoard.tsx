@@ -11,8 +11,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import AnimatedCounter from '@/components/AnimatedCounter'
 import { formatNumber } from '@/components/dashboard-v2/format'
 import { Avatar } from '@/components/leaderboard/Avatar'
+import type { BoardFeedReport } from '@/components/leaderboard/burnSource'
 import { CursorOptInModal } from '@/components/leaderboard/CursorOptInModal'
-import { LeaderboardSponsorFlip } from '@/components/leaderboard/LeaderboardSponsorFlip'
 import {
   IconBolt,
   IconCrown,
@@ -91,12 +91,17 @@ function TokenValue({ value, animated = false }: { value: string; animated?: boo
 export function CursorBoard({
   windowId,
   onWindowChange,
+  toolbar,
   sourceToggle,
   linkedStamp = null,
-  onOptInOpenChange
+  onOptInOpenChange,
+  onFeed
 }: {
   windowId: CursorBoardWindowId
   onWindowChange: (next: CursorBoardWindowId) => void
+  /** The page's board tabs, seated on the left of this board's one
+   *  toolbar row (GLOBAL's pattern). */
+  toolbar?: React.ReactNode
   sourceToggle: React.ReactNode
   /** Bumped when the viewer links a cursor.com profile elsewhere on the
    *  page (the coin-up prompt) — refetches rows + viewer link state so a
@@ -106,6 +111,10 @@ export function CursorBoard({
    *  freezes the arena's ambient animation while the backdrop blur covers
    *  it (same guard the auto prompt engages). */
   onOptInOpenChange?: (open: boolean) => void
+  /** Reports the landed rows (null while fetching) and the failure state
+   *  to the CRT above the board, so the tube can cycle the top burners of
+   *  this source — or drop to NO CARRIER when the fetch dies. */
+  onFeed?: (report: BoardFeedReport<CursorBoardRow>) => void
 }) {
   const [rows, setRows] = useState<CursorBoardRow[] | null>(null)
   const [totals, setTotals] = useState<CursorBoardTotals | null>(null)
@@ -118,6 +127,10 @@ export function CursorBoard({
   const [optInOpen, setOptInOpen] = useState(false)
   const fetchSeq = useRef(0)
   const { openSettings } = useSettingsModal()
+
+  useEffect(() => {
+    onFeed?.({ rows, failed })
+  }, [rows, failed, onFeed])
 
   const load = useCallback(async (requestedWindow: CursorBoardWindowId = windowId) => {
     const seq = ++fetchSeq.current
@@ -242,152 +255,158 @@ export function CursorBoard({
 
   return (
     <>
-      <section className="lbc-reveal">
-        <LeaderboardSponsorFlip>
-          <div className="lb-panel grid grid-cols-2 overflow-hidden md:grid-cols-4">
-            <StatCell
-              divider={0}
-              icon={<IconUsers size={11} className="text-zinc-600" />}
-              label="PLAYERS"
-              hint="linked profiles"
-            >
-              <AnimatedCounter
-                value={totals?.pilots ?? 0}
-                duration={1000}
-                formatter={(value) => formatNumber(Math.round(value))}
-              />
-            </StatCell>
+      <section className="lbc-reveal" style={{ ['--rv' as string]: '90ms' }}>
+        <div className="lb-panel grid grid-cols-2 overflow-hidden md:grid-cols-4">
+          <StatCell
+            divider={0}
+            icon={<IconUsers size={11} className="text-zinc-600" />}
+            label="PLAYERS"
+            hint="linked profiles"
+          >
+            <AnimatedCounter
+              value={totals?.pilots ?? 0}
+              duration={1000}
+              formatter={(value) => formatNumber(Math.round(value))}
+            />
+          </StatCell>
 
-            <StatCell
-              divider={1}
-              icon={<IconFlame size={11} className="text-orange-400" />}
-              label="TOKENS TORCHED"
-              hint={windowMeta?.label.toLowerCase()}
-            >
-              <TokenValue value={totals?.totalTokens ?? '0'} animated />
-            </StatCell>
+          <StatCell
+            divider={1}
+            icon={<IconFlame size={11} className="text-orange-400" />}
+            label="TOKENS TORCHED"
+            hint={windowMeta?.label.toLowerCase()}
+          >
+            <TokenValue value={totals?.totalTokens ?? '0'} animated />
+          </StatCell>
 
-            <StatCell
-              divider={2}
-              icon={<IconBolt size={11} className="text-orange-400" />}
-              label="AGENTS RUN"
-              hint={
-                totals
-                  ? `${formatNumber(totals.agentsLocal)} local · ${formatNumber(totals.agentsCloud)} cloud`
-                  : undefined
-              }
-            >
-              <AnimatedCounter
-                value={agentsTotal}
-                duration={1000}
-                formatter={(value) => formatNumber(Math.round(value))}
-              />
-            </StatCell>
+          <StatCell
+            divider={2}
+            icon={<IconBolt size={11} className="text-orange-400" />}
+            label="AGENTS RUN"
+            hint={
+              totals
+                ? `${formatNumber(totals.agentsLocal)} local · ${formatNumber(totals.agentsCloud)} cloud`
+                : undefined
+            }
+          >
+            <AnimatedCounter
+              value={agentsTotal}
+              duration={1000}
+              formatter={(value) => formatNumber(Math.round(value))}
+            />
+          </StatCell>
 
-            <StatCell
-              divider={3}
-              icon={<IconCrown size={11} className="text-[rgb(var(--lb-gold)/0.8)]" />}
-              label="TOP BURNER"
-              hint={leader ? `${formatCompactTokenCount(leader.tokens)} tokens` : undefined}
-              valueStyle={
-                leader
-                  ? {
-                      color: 'rgb(var(--lb-gold))',
-                      textShadow: '0 0 12px rgb(var(--lb-gold) / calc(0.4 * var(--lb-glow, 1)))'
-                    }
-                  : undefined
-              }
-            >
-              {leader ? (
-                <span className="block truncate">@{leader.cursorUsername.toUpperCase()}</span>
-              ) : (
-                <span className="text-zinc-700">—</span>
-              )}
-            </StatCell>
-          </div>
-        </LeaderboardSponsorFlip>
+          <StatCell
+            divider={3}
+            icon={<IconCrown size={11} className="text-[rgb(var(--lb-gold)/0.8)]" />}
+            label="TOP BURNER"
+            hint={leader ? `${formatCompactTokenCount(leader.tokens)} tokens` : undefined}
+            valueStyle={
+              leader
+                ? {
+                    color: 'rgb(var(--lb-gold))',
+                    textShadow: '0 0 12px rgb(var(--lb-gold) / calc(0.4 * var(--lb-glow, 1)))'
+                  }
+                : undefined
+            }
+          >
+            {leader ? (
+              <span className="block truncate">@{leader.cursorUsername.toUpperCase()}</span>
+            ) : (
+              <span className="text-zinc-700">—</span>
+            )}
+          </StatCell>
+        </div>
       </section>
 
-      <section className="lbc-reveal relative" style={{ ['--rv' as string]: '80ms' }}>
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-baseline gap-3">
+      {/* The one toolbar row (GLOBAL's pattern): the page's board tabs on
+          the left; fuel toggle, window pills, refresh and JOIN ride the
+          right side, wrapping under the tabs on phones. */}
+      <div
+        className="lbc-reveal !mt-3 flex flex-wrap items-center justify-between gap-2"
+        style={{ ['--rv' as string]: '140ms' }}
+      >
+        {toolbar}
+
+        <div className="flex w-full flex-wrap items-center justify-end gap-2 sm:w-auto sm:flex-1">
+          {sourceToggle}
+
+          <div
+            className="lb-inset flex items-center gap-0.5 rounded-lg p-0.5"
+            role="tablist"
+            aria-label="Cursor leaderboard period"
+          >
+            {WINDOWS.map((item) => {
+              const active = item.id === windowId
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => {
+                    if (item.id === windowId) return
+                    setRows(null)
+                    setFailed(false)
+                    onWindowChange(item.id)
+                  }}
+                  className={`rounded-md px-2.5 py-1.5 text-[9px] tracking-[0.2em] transition-colors ${
+                    active ? 'text-orange-300' : 'text-zinc-600 hover:text-zinc-300'
+                  }`}
+                  style={
+                    active
+                      ? {
+                          border: '1px solid rgb(251 146 60 / 0.35)',
+                          background: 'rgb(251 146 60 / 0.06)'
+                        }
+                      : { border: '1px solid transparent' }
+                  }
+                >
+                  {item.label}
+                </button>
+              )
+            })}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => void refresh()}
+            disabled={refreshing}
+            className="lb-inset flex items-center gap-2 rounded-lg px-3 py-2 text-[9px] tracking-[0.2em] text-zinc-500 transition-colors hover:text-zinc-100 disabled:cursor-wait"
+            aria-label="Refresh cursor leaderboard"
+          >
+            <IconRefresh size={11} className={refreshing ? 'animate-spin' : ''} />
+            <span className="hidden sm:inline">{refreshing ? 'SYNCING' : 'REFRESH'}</span>
+          </button>
+
+          {canJoin && (
+            <button
+              type="button"
+              onClick={openOptIn}
+              className="flex items-center gap-2 rounded-lg border border-orange-400/40 bg-orange-400/[0.08] px-3 py-2 text-[9px] tracking-[0.2em] text-orange-300 transition-colors hover:bg-orange-400/[0.16]"
+            >
+              <IconFlame size={11} />
+              <span>
+                JOIN<span className="hidden sm:inline"> THE BOARD</span>
+              </span>
+            </button>
+          )}
+        </div>
+      </div>
+
+      <section className="lbc-reveal relative" style={{ ['--rv' as string]: '190ms' }}>
+        <div className="lb-panel relative overflow-hidden">
+          {/* header strip folded into the panel's top edge, like STANDINGS */}
+          <div className="flex items-baseline justify-between gap-3 border-b border-[rgb(var(--lb-panel-edge)/0.08)] px-4 py-3 md:px-5">
             <h2 className="font-display text-[11px] font-semibold tracking-[0.45em] text-zinc-300">
               BURN BOARD
             </h2>
             {!loading && !failed && (rows?.length ?? 0) > 0 && (
-              <span className="text-[10px] tracking-[0.2em] text-zinc-600 tabular-nums">
+              <span className="text-[10px] tracking-[0.2em] text-zinc-500 tabular-nums">
                 {rows!.length} PLAYERS
               </span>
             )}
           </div>
-
-          <div className="flex items-center gap-2">
-            {sourceToggle}
-
-            <div
-              className="lb-inset flex items-center gap-0.5 rounded-lg p-0.5"
-              role="tablist"
-              aria-label="Cursor leaderboard period"
-            >
-              {WINDOWS.map((item) => {
-                const active = item.id === windowId
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    role="tab"
-                    aria-selected={active}
-                    onClick={() => {
-                      if (item.id === windowId) return
-                      setRows(null)
-                      setFailed(false)
-                      onWindowChange(item.id)
-                    }}
-                    className={`rounded-md px-2.5 py-1.5 text-[9px] tracking-[0.2em] transition-colors ${
-                      active ? 'text-orange-300' : 'text-zinc-600 hover:text-zinc-300'
-                    }`}
-                    style={
-                      active
-                        ? {
-                            border: '1px solid rgb(251 146 60 / 0.35)',
-                            background: 'rgb(251 146 60 / 0.06)'
-                          }
-                        : { border: '1px solid transparent' }
-                    }
-                  >
-                    {item.label}
-                  </button>
-                )
-              })}
-            </div>
-
-            <button
-              type="button"
-              onClick={() => void refresh()}
-              disabled={refreshing}
-              className="lb-inset flex items-center gap-2 rounded-lg px-3 py-2 text-[9px] tracking-[0.2em] text-zinc-500 transition-colors hover:text-zinc-100 disabled:cursor-wait"
-              aria-label="Refresh cursor leaderboard"
-            >
-              <IconRefresh size={11} className={refreshing ? 'animate-spin' : ''} />
-              <span className="hidden sm:inline">{refreshing ? 'SYNCING' : 'REFRESH'}</span>
-            </button>
-
-            {canJoin && (
-              <button
-                type="button"
-                onClick={openOptIn}
-                className="flex items-center gap-2 rounded-lg border border-orange-400/40 bg-orange-400/[0.08] px-3 py-2 text-[9px] tracking-[0.2em] text-orange-300 transition-colors hover:bg-orange-400/[0.16]"
-              >
-                <IconFlame size={11} />
-                <span>
-                  JOIN<span className="hidden sm:inline"> THE BOARD</span>
-                </span>
-              </button>
-            )}
-          </div>
-        </div>
-
-        <div className="lb-panel relative overflow-hidden">
           <div
             className={`${ROW_GRID} border-b border-[rgb(var(--lb-panel-edge)/0.08)] py-3 text-[9px] tracking-[0.3em] text-zinc-500`}
           >

@@ -71,7 +71,7 @@ const pressStart = Press_Start_2P({
 // Geometric display sans for competitive surfaces (leaderboard names,
 // headers, big numerals) — sharper than mono, still space-age.
 const spaceGrotesk = Space_Grotesk({
-  weight: ['400', '500', '600', '700'],
+  weight: ['300', '400', '500', '600', '700'],
   subsets: ['latin'],
   variable: '--font-display',
   display: 'swap',
@@ -135,7 +135,8 @@ export const metadata: Metadata = {
     url: '/'
   },
   twitter: {
-    card: 'summary_large_image'
+    card: 'summary_large_image',
+    site: '@cribble_ai'
   },
   icons: {
     icon: [
