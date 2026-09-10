@@ -70,6 +70,7 @@ export function impactDaySeverity(impact: string): Extract<Severity, 'degraded' 
     case 'major_outage':
     case 'full_outage':
     case 'outage':
+    case 'service_outage':
       return 'outage'
     default:
       return 'degraded'

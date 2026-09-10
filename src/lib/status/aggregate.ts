@@ -8,6 +8,7 @@ import {
 } from './statuspage'
 import { OPENAI_SOURCE_URL, fetchChatgptStatus } from './openai'
 import { XAI_SOURCE_URL, fetchXaiStatus } from './xai'
+import { GEMINI_SOURCE_URL, fetchGeminiStatus } from './gemini'
 import { fetchCribbleStatus } from './cribble'
 import { severityRank } from './uptime'
 
@@ -34,6 +35,7 @@ export const STATUS_PROVIDERS: readonly ProviderSpec[] = [
   { id: 'github', name: 'GitHub', sourceUrl: GITHUB_SOURCE.origin, load: () => fetchStatuspageStatus(GITHUB_SOURCE) },
   { id: 'chatgpt', name: 'ChatGPT', sourceUrl: OPENAI_SOURCE_URL, load: fetchChatgptStatus },
   { id: 'claude', name: 'Claude', sourceUrl: CLAUDE_SOURCE.origin, load: () => fetchStatuspageStatus(CLAUDE_SOURCE) },
+  { id: 'gemini', name: 'Gemini', sourceUrl: GEMINI_SOURCE_URL, load: fetchGeminiStatus },
   { id: 'cursor', name: 'Cursor', sourceUrl: CURSOR_SOURCE.origin, load: () => fetchStatuspageStatus(CURSOR_SOURCE) },
   { id: 'grok', name: 'Grok', sourceUrl: XAI_SOURCE_URL, load: fetchXaiStatus },
   { id: 'cribble', name: 'Cribble', sourceUrl: 'https://cribble.dev', load: fetchCribbleStatus }

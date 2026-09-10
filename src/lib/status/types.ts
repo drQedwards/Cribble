@@ -6,8 +6,8 @@
 export type Severity = 'operational' | 'degraded' | 'outage' | 'unknown'
 
 /** Display order is the payload order: origin, github, chatgpt, claude,
- *  cursor, grok, cribble. The UI renders services as received. */
-export type ServiceId = 'origin' | 'github' | 'chatgpt' | 'claude' | 'cursor' | 'grok' | 'cribble'
+ *  gemini, cursor, grok, cribble. The UI renders services as received. */
+export type ServiceId = 'origin' | 'github' | 'chatgpt' | 'claude' | 'gemini' | 'cursor' | 'grok' | 'cribble'
 
 /** Reconstructed vendor history window, in UTC days. */
 export const STATUS_WINDOW_DAYS = 90
