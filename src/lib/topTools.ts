@@ -1,6 +1,10 @@
 // Canonical top-tools ranking, shared by the dashboard tools API, the
 // leaderboard and the public profile builder so every surface crowns the
-// same #1 tool. Tools are ranked by score contribution — the same session
+// same #1 tool.
+//
+// Product thesis (keep): this board is the cost-efficiency signal — which
+// tools contribute to score (and burn) so agents can cut API spend and keep
+// x402 / Agent402 pay-per-call economics affordable. Tools are ranked by score contribution — the same session
 // scoring that produces the leaderboard score — not raw visit counts:
 // visits pay a flat 40 pts while real usage lives in verified active time,
 // so a tool you ping often but barely use must not out-rank the one you

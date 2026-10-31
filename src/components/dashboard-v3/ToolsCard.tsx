@@ -23,13 +23,14 @@ export function ToolsCard({ tools }: { tools: ToolRow[] }) {
       <PanelHeader
         title="TOP TOOLS"
         icon={<IconChip size={12} />}
-        subtitle="By contribution to score"
+        subtitle="By contribution to score · less burn, cheaper x402"
       />
 
       {tools.length === 0 ? (
         <div className="mt-6 rounded-lg border border-dashed border-zinc-800 p-4 text-xs leading-relaxed text-zinc-500">
           No AI tool usage detected yet. Open ChatGPT, Claude, or Cursor with the extension
-          installed to start earning points.
+          installed to start earning points — and to show which tools burn tokens so API
+          calls stay cheap enough for x402 pay-per-call.
         </div>
       ) : (
         <>
